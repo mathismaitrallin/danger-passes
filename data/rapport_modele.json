@@ -1,0 +1,268 @@
+{
+  "cible": "Tir de la même équipe, dans la même possession, dans les 15 secondes",
+  "n_passes": 47329,
+  "n_matchs": 64,
+  "taux_base": 0.0666,
+  "modele_retenu": "Régression logistique",
+  "resultats": {
+    "Ancienne formule (poids à la main)": {
+      "auc": 0.7179
+    },
+    "Distance au but seule": {
+      "auc": 0.8285
+    },
+    "Position seule (sans 360)": {
+      "auc": 0.8267,
+      "brier": 0.04994,
+      "brier_skill": 0.1962,
+      "log_loss": 0.18785
+    },
+    "Régression logistique": {
+      "auc": 0.8359,
+      "brier": 0.04959,
+      "brier_skill": 0.2018,
+      "log_loss": 0.18558
+    },
+    "Gradient boosting": {
+      "auc": 0.8342,
+      "brier": 0.04969,
+      "brier_skill": 0.2002,
+      "log_loss": 0.18594
+    }
+  },
+  "resultats_dernier_tiers": {
+    "Ancienne formule (poids à la main)": {
+      "auc": 0.5831
+    },
+    "Distance au but seule": {
+      "auc": 0.7424
+    },
+    "Position seule (sans 360)": {
+      "auc": 0.7484,
+      "brier": 0.12789,
+      "brier_skill": 0.1841,
+      "log_loss": 0.41487
+    },
+    "Régression logistique": {
+      "auc": 0.7527,
+      "brier": 0.12716,
+      "brier_skill": 0.1888,
+      "log_loss": 0.41311
+    },
+    "Gradient boosting": {
+      "auc": 0.7523,
+      "brier": 0.12741,
+      "brier_skill": 0.1872,
+      "log_loss": 0.41329
+    }
+  },
+  "taux_base_dernier_tiers": 0.1946,
+  "n_dernier_tiers": 11195,
+  "gain_contexte_360": {
+    "gain": 0.0092,
+    "ic95": [
+      0.0054,
+      0.0131
+    ]
+  },
+  "gain_vs_ancienne_formule": {
+    "gain": 0.118,
+    "ic95": [
+      0.1075,
+      0.1285
+    ]
+  },
+  "deciles": [
+    {
+      "decile": 1,
+      "proba_moyenne": 0.0044,
+      "taux_observe": 0.0051,
+      "passes": 4733
+    },
+    {
+      "decile": 2,
+      "proba_moyenne": 0.0083,
+      "taux_observe": 0.0097,
+      "passes": 4733
+    },
+    {
+      "decile": 3,
+      "proba_moyenne": 0.0124,
+      "taux_observe": 0.0137,
+      "passes": 4733
+    },
+    {
+      "decile": 4,
+      "proba_moyenne": 0.0175,
+      "taux_observe": 0.0152,
+      "passes": 4733
+    },
+    {
+      "decile": 5,
+      "proba_moyenne": 0.0243,
+      "taux_observe": 0.0262,
+      "passes": 4733
+    },
+    {
+      "decile": 6,
+      "proba_moyenne": 0.0337,
+      "taux_observe": 0.03,
+      "passes": 4732
+    },
+    {
+      "decile": 7,
+      "proba_moyenne": 0.0473,
+      "taux_observe": 0.0507,
+      "passes": 4733
+    },
+    {
+      "decile": 8,
+      "proba_moyenne": 0.0694,
+      "taux_observe": 0.068,
+      "passes": 4733
+    },
+    {
+      "decile": 9,
+      "proba_moyenne": 0.1146,
+      "taux_observe": 0.1204,
+      "passes": 4733
+    },
+    {
+      "decile": 10,
+      "proba_moyenne": 0.333,
+      "taux_observe": 0.3264,
+      "passes": 4733
+    }
+  ],
+  "importance": {
+    "Distance au but (arrivée)": 0.15,
+    "Angle de tir (arrivée)": 0.0112,
+    "Défenseurs restants": 0.0084,
+    "Soutien offensif": 0.006,
+    "Visibilité 360": 0.0041,
+    "Contexte de jeu": 0.0038,
+    "Technique de passe": 0.0027,
+    "Pression sur le receveur": 0.0015,
+    "Point de départ": 0.0014,
+    "Adversaires éliminés": 0.0009,
+    "Passe dans le dos de la défense": 0.0008,
+    "Pression sur le passeur": 0.0004,
+    "Coup de pied arrêté": 0.0001,
+    "Progression vers le but": 0.0001,
+    "Cône de tir obstrué": -0.0002
+  },
+  "valeur_avant": {
+    "modele_retenu": "Gradient boosting",
+    "resultats": {
+      "Régression logistique": {
+        "auc": 0.797,
+        "brier": 0.05377,
+        "brier_skill": 0.1345,
+        "log_loss": 0.20223
+      },
+      "Gradient boosting": {
+        "auc": 0.7952,
+        "brier": 0.05379,
+        "brier_skill": 0.1343,
+        "log_loss": 0.20152
+      }
+    }
+  },
+  "valeur_ajoutee": {
+    "moyenne": 0.003,
+    "part_positive": 0.3566,
+    "correlation_adv_elimines": {
+      "danger": 0.373,
+      "valeur_ajoutee": 0.463
+    },
+    "par_zone_et_elimines": [
+      {
+        "zone": "Propre moitié",
+        "elimines": "0",
+        "passes": 16728,
+        "danger": 1.42,
+        "valeur_ajoutee": -1.26
+      },
+      {
+        "zone": "Propre moitié",
+        "elimines": "1-2",
+        "passes": 4631,
+        "danger": 1.75,
+        "valeur_ajoutee": -0.38
+      },
+      {
+        "zone": "Propre moitié",
+        "elimines": "3+",
+        "passes": 2348,
+        "danger": 2.38,
+        "valeur_ajoutee": 0.04
+      },
+      {
+        "zone": "Milieu offensif",
+        "elimines": "0",
+        "passes": 5665,
+        "danger": 5.24,
+        "valeur_ajoutee": -2.3
+      },
+      {
+        "zone": "Milieu offensif",
+        "elimines": "1-2",
+        "passes": 2488,
+        "danger": 5.31,
+        "valeur_ajoutee": 0.66
+      },
+      {
+        "zone": "Milieu offensif",
+        "elimines": "3+",
+        "passes": 2871,
+        "danger": 5.91,
+        "valeur_ajoutee": 2.31
+      },
+      {
+        "zone": "Dernier tiers",
+        "elimines": "0",
+        "passes": 3076,
+        "danger": 15.97,
+        "valeur_ajoutee": -3.36
+      },
+      {
+        "zone": "Dernier tiers",
+        "elimines": "1-2",
+        "passes": 1867,
+        "danger": 13.84,
+        "valeur_ajoutee": 1.58
+      },
+      {
+        "zone": "Dernier tiers",
+        "elimines": "3+",
+        "passes": 3288,
+        "danger": 13.67,
+        "valeur_ajoutee": 5.01
+      },
+      {
+        "zone": "Surface et abords",
+        "elimines": "0",
+        "passes": 515,
+        "danger": 44.51,
+        "valeur_ajoutee": 2.65
+      },
+      {
+        "zone": "Surface et abords",
+        "elimines": "1-2",
+        "passes": 238,
+        "danger": 36.27,
+        "valeur_ajoutee": 5.27
+      },
+      {
+        "zone": "Surface et abords",
+        "elimines": "3+",
+        "passes": 1584,
+        "danger": 31.26,
+        "valeur_ajoutee": 10.05
+      }
+    ]
+  },
+  "passes_reussies_total": 56346,
+  "couverture_360": 0.84,
+  "date_construction": "2026-10-07"
+}
