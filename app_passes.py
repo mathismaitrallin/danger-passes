@@ -242,11 +242,12 @@ with onglet_carte:
             l1.markdown(carte_html(f"D'où partent les {nom_fortes}", texte), unsafe_allow_html=True)
             l2.markdown(carte_html("Où arrivent-elles", texte), unsafe_allow_html=True)
         meilleurs = selection.groupby(["joueur", "equipe"])[mesure].sum().sort_values(ascending=False).head(3)
-        lignes = "".join(f"<li><b>{j}</b> ({e}) · {dec(v)}</li>" for (j, e), v in meilleurs.items())
+        formater = dec if mesure == "danger" else (lambda v: f"{v * 100:+.1f} pts".replace(".", ","))
+        lignes = "".join(f"<li><b>{j}</b> ({e}) · {formater(v)}</li>" for (j, e), v in meilleurs.items())
         titre_l3 = "Passeurs qui créent le plus de danger" if mesure == "danger" else \
             "Passeurs qui ajoutent le plus de valeur"
         detail_l3 = "somme des probabilités de tir de leurs passes" if mesure == "danger" else \
-            "somme des gains de probabilité de leurs passes"
+            "somme des gains de probabilité de leurs passes, en points"
         l3.markdown(carte_html(titre_l3, f"<ul>{lignes}</ul><span class='discret'>{detail_l3}</span>"),
                     unsafe_allow_html=True)
 
@@ -329,7 +330,7 @@ with onglet_joueurs:
     st.caption("Calculé sur la sélection de match, d'équipe et de type de passe (toutes périodes). "
                "Le « danger créé » additionne les probabilités de tir de toutes les passes d'un joueur : "
                "c'est le nombre de ses passes qu'on pouvait s'attendre à voir suivies d'un tir. La « valeur "
-               "ajoutée » additionne ce que chaque passe a fait gagner (ou perdre) par rapport à la situation "
+               "ajoutée » additionne, en points, ce que chaque passe a fait gagner (ou perdre) par rapport à la situation "
                "de départ : elle met en avant les joueurs qui font progresser l'équipe, même loin du but. Une valeur "
                "négative n'est pas un défaut : faire tourner le ballon en sécurité (Rodri, Gavi) dégrade "
                "légèrement la situation immédiate mais peut servir le jeu de possession. "
@@ -346,6 +347,8 @@ with onglet_joueurs:
                 meilleure=("danger", "max"), tirs=("tir_15s", "sum"))
            .merge(mins, on="joueur_id", how="left"))
     agr["minutes"] = agr["minutes"].fillna(0)
+    agr["valeur"] *= 100      # valeur ajoutée en points de probabilité, comme pour une passe seule
+    agr["meilleure"] *= 100   # en %
     agr["danger_90"] = agr["danger"] / agr["minutes"].clip(lower=1) * 90
     agr["valeur_90"] = agr["valeur"] / agr["minutes"].clip(lower=1) * 90
 
@@ -363,14 +366,22 @@ with onglet_joueurs:
         st.info("Aucun joueur ne correspond. Baissez le nombre de minutes minimum.")
     else:
         top = classement.head(15).iloc[::-1]
+        en_points = cle in ("valeur", "valeur_90")
+        if en_points:
+            textes, survol = [f"{v:+.1f} pts".replace(".", ",") for v in top[cle]], "%{x:+.1f} pts"
+        elif cle == "tres_dangereuses":
+            textes, survol = [f"{v:.0f}" for v in top[cle]], "%{x:.0f}"
+        else:
+            textes, survol = [dec(v) for v in top[cle]], "%{x:.2f}"
         fig = go.Figure(go.Bar(
             x=top[cle], y=top["joueur"] + "  ·  " + top["equipe"], orientation="h",
             marker=dict(color=top[cle], colorscale=ECHELLE_BARRES, line=dict(width=0)),
-            text=[dec(v) if cle != "tres_dangereuses" else f"{v:.0f}" for v in top[cle]],
-            textposition="outside", cliponaxis=False, hovertemplate="%{y}<br>%{x:.2f}<extra></extra>",
+            text=textes, textposition="outside", cliponaxis=False,
+            hovertemplate="%{y}<br>" + survol + "<extra></extra>",
         ))
-        fig.update_layout(height=540, margin=dict(l=8, r=40, t=10, b=40), **FOND_GRAPHIQUE,
-                          xaxis=dict(gridcolor=GRILLE, zeroline=False, title=critere),
+        fig.update_layout(height=540, margin=dict(l=8, r=55, t=10, b=40), **FOND_GRAPHIQUE,
+                          xaxis=dict(gridcolor=GRILLE, zeroline=False,
+                                     title=critere + (" (points de probabilité)" if en_points else "")),
                           yaxis=dict(showgrid=False, automargin=True))
         afficher(fig)
 
@@ -391,10 +402,10 @@ with onglet_joueurs:
                 "Danger / 90": st.column_config.ProgressColumn(
                     format="%.2f", min_value=0, max_value=float(max(classement["danger_90"].max(), 0.01))),
                 "Valeur ajoutée": st.column_config.NumberColumn(
-                    format="%+.2f", help="Somme des gains de probabilité de tir apportés par ses passes"),
-                "Valeur / 90": st.column_config.NumberColumn(format="%+.2f"),
+                    format="%+.1f pts", help="Somme des gains de probabilité de tir apportés par ses passes"),
+                "Valeur / 90": st.column_config.NumberColumn(format="%+.1f pts"),
                 "Meilleure passe": st.column_config.NumberColumn(
-                    format="%.2f", help="Probabilité de tir après sa passe la plus dangereuse"),
+                    format="%.1f %%", help="Probabilité de tir après sa passe la plus dangereuse"),
             },
         )
 
