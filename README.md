@@ -32,15 +32,7 @@ Le danger mesure la proximité d'un tir : une passe qui casse une ligne au milie
 
 > **valeur ajoutée = danger après la passe − probabilité de tir avant la passe**
 
-Elle vaut zéro en moyenne et récompense les passes qui cassent des lignes :
-
-| Zone d'arrivée | 0 adversaire éliminé | 3 ou plus |
-|---|---|---|
-| Milieu offensif | −2,3 pts | **+2,3 pts** |
-| Dernier tiers | −3,4 pts | **+5,0 pts** |
-| Surface et abords | +2,6 pts | **+10,1 pts** |
-
-Limite : dans sa propre moitié, le gain reste quasi nul (la probabilité de tir dans les 15 s y est très faible avant comme après). Valoriser la relance demanderait une cible à plus long terme.
+Elle vaut zéro en moyenne et récompense les passes qui cassent des lignes.
 
 ## Limites
 
