@@ -22,7 +22,6 @@ Validation croisée **groupée par match** (5 plis) : chaque passe est notée pa
 | Gradient boosting | 0,834 | 0,752 |
 | **Régression logistique (retenue)** | **0,836** | **0,753** |
 
-- **La première version du projet ne distinguait presque pas les passes dangereuses dans le dernier tiers** (0,58). Gain du nouveau modèle : +0,118 d'AUC, IC 95 % [0,108 ; 0,129] (bootstrap sur les matchs).
 - **L'endroit où arrive la passe explique l'essentiel du danger.**
 - **Le contexte 360 apporte un gain modeste mais significatif** : +0,009 d'AUC, IC 95 % [0,005 ; 0,013].
 - **Probabilités bien calibrées** : pour les 10 % de passes les plus dangereuses, le modèle annonce 33 % et un tir suit dans 33 % des cas.
@@ -54,29 +53,6 @@ Limite : dans sa propre moitié, le gain reste quasi nul (la probabilité de tir
 3. **Cible** : tir de la même équipe, dans la même possession, dans les 15 secondes (6,7 % des passes).
 4. **Modèles comparés** : ancienne formule, distance seule, modèle de position seule, régression logistique, gradient boosting.
 5. **Interprétation** : importance par permutation, par famille de variables.
-
-## Structure
-
-```
-├── app_passes.py            application Streamlit
-├── construire_donnees.py    pipeline complet : téléchargement → variables → modèle → data/
-├── analyse.ipynb            notebook de présentation des résultats
-├── passes/
-│   ├── donnees.py           téléchargement StatsBomb (avec cache)
-│   ├── variables.py         variables de chaque passe (géométrie + 360)
-│   ├── modele.py            modèles, validation par match, calibration, importance
-│   └── terrain.py           dessin du terrain et des passes (Plotly)
-├── data/                    données prêtes pour l'application (~9 Mo)
-└── ancienne_version_metrica/  première version du projet (données Metrica)
-```
-
-## Reproduire
-
-```bash
-pip install -r requirements.txt
-python construire_donnees.py   # télécharge ~80 Mo depuis GitHub, environ 5 minutes
-streamlit run app_passes.py
-```
 
 ## Limites
 
