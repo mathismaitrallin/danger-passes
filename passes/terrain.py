@@ -10,6 +10,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.colors import sample_colorscale
 
+from passes.langue import points as ecart_points, tr
+
 L, H = 105.0, 68.0
 
 COULEURS = {
@@ -84,15 +86,17 @@ def terrain(hauteur: int = 560, titre: str | None = None, barre_couleurs: bool =
         title=dict(text=titre, x=0.01, font=dict(size=15)) if titre else None,
         dragmode="pan",
     )
-    fig.add_annotation(x=L / 2, y=-1.2, text="Sens d'attaque  →", showarrow=False,
+    fig.add_annotation(x=L / 2, y=-1.2, text=tr("Sens d'attaque  →", "Direction of attack  →"), showarrow=False,
                        font=dict(size=11, color=COULEURS["neutre"]), yanchor="bottom")
     return fig
 
 
-MESURES = {
-    "danger": {"titre": "Danger (probabilité de tir)", "suffixe": " %"},
-    "valeur_ajoutee": {"titre": "Valeur ajoutée (points de probabilité)", "suffixe": " pts"},
-}
+def infos_mesure(mesure: str) -> dict:
+    """Titre et unité de l'échelle de couleurs."""
+    if mesure == "danger":
+        return {"titre": tr("Danger (probabilité de tir)", "Danger (shot probability)"), "suffixe": tr(" %", "%")}
+    return {"titre": tr("Valeur ajoutée (points de probabilité)", "Value added (probability points)"),
+            "suffixe": " pts"}
 
 
 def ajouter_passes(fig: go.Figure, passes: pd.DataFrame, vmax: float | None = None,
@@ -126,15 +130,16 @@ def ajouter_passes(fig: go.Figure, passes: pd.DataFrame, vmax: float | None = No
     # têtes de flèche + survol (angle Plotly : 0 = vers le haut de l'écran, sens horaire ;
     # l'axe y est inversé, donc un y croissant descend à l'écran)
     angles = np.degrees(np.arctan2(p["x_fin"] - p["x_debut"], -(p["y_fin"] - p["y_debut"])))
-    suite = np.where(p["but_15s"], "⚽ but", np.where(p["tir_15s"], "tir", "pas de tir"))
+    suite = np.where(p["but_15s"], tr("⚽ but", "⚽ goal"),
+                     np.where(p["tir_15s"], tr("tir", "shot"), tr("pas de tir", "no shot")))
     custom = np.column_stack([
         p["joueur"], p["receveur"], p["equipe"], p["adversaire"],
         p["minute"].astype(str) + "'", (p["danger"] * 100).round(1),
-        (p["valeur_avant"] * 100).round(1), (p["valeur_ajoutee"] * 100).map(lambda v: f"{v:+.1f}".replace(".", ",")),
+        (p["valeur_avant"] * 100).round(1), p["valeur_ajoutee"].map(lambda v: ecart_points(v).removesuffix(" pts")),
         p["dist_but_fin"].round(0).astype(int), p["adv_elimines"], p["defenseurs_restants"], suite,
     ])
     graduations = np.linspace(0, vmax, 5)
-    infos = MESURES[mesure]
+    infos = infos_mesure(mesure)
     fig.add_trace(go.Scatter(
         x=p["x_fin"], y=p["y_fin"], mode="markers", customdata=custom,
         marker=dict(symbol="arrow", size=11, angle=angles, color=valeurs, cmin=0, cmax=vmax,
@@ -145,14 +150,21 @@ def ajouter_passes(fig: go.Figure, passes: pd.DataFrame, vmax: float | None = No
                                   tickvals=graduations,
                                   ticktext=[f"{v * 100:.0f}{infos['suffixe']}" for v in graduations],
                                   thickness=10, len=0.5, outlinewidth=0) if colorbar else None),
-        hovertemplate=(
+        hovertemplate=tr(
             "<b>%{customdata[0]}</b> → %{customdata[1]}<br>"
             "%{customdata[2]} vs %{customdata[3]} · %{customdata[4]}<br>"
             "<b>Danger : %{customdata[5]} %</b> de chances de tir dans les 15 s<br>"
             "Avant la passe : %{customdata[6]} % · <b>valeur ajoutée : %{customdata[7]} pts</b><br>"
             "Arrivée à %{customdata[8]} m du but · %{customdata[9]} adversaire(s) éliminé(s)<br>"
             "%{customdata[10]} défenseur(s) encore entre le ballon et le but<br>"
-            "Suite de l'action : %{customdata[11]}<extra></extra>"
+            "Suite de l'action : %{customdata[11]}<extra></extra>",
+            "<b>%{customdata[0]}</b> → %{customdata[1]}<br>"
+            "%{customdata[2]} vs %{customdata[3]} · %{customdata[4]}<br>"
+            "<b>Danger: %{customdata[5]}%</b> chance of a shot within 15 s<br>"
+            "Before the pass: %{customdata[6]}% · <b>value added: %{customdata[7]} pts</b><br>"
+            "Ends %{customdata[8]} m from goal · %{customdata[9]} opponent(s) bypassed<br>"
+            "%{customdata[10]} defender(s) still between the ball and the goal<br>"
+            "What happened next: %{customdata[11]}<extra></extra>"
         ),
     ))
     return fig
@@ -166,7 +178,7 @@ def figure_freeze_frame(passe: pd.Series, joueurs: pd.DataFrame, vmax: float) ->
     if zone is not None and len(zone) >= 6:
         xs, ys = list(zone[0::2]), list(zone[1::2])
         fig.add_trace(go.Scatter(x=xs, y=ys, fill="toself", mode="lines", hoverinfo="skip",
-                                 name="Champ de la caméra",
+                                 name=tr("Champ de la caméra", "Camera view"),
                                  fillcolor="rgba(61,209,255,0.07)",
                                  line=dict(color="rgba(61,209,255,0.35)", width=1, dash="dot")))
 
@@ -186,15 +198,16 @@ def figure_freeze_frame(passe: pd.Series, joueurs: pd.DataFrame, vmax: float) ->
 
     points(joueurs["coequipier"] & ~joueurs["passeur"] & ~joueurs["gardien"], passe["equipe"],
            COULEURS["attaque"], "circle", 13)
-    points(joueurs["coequipier"] & joueurs["gardien"], f"Gardien ({passe['equipe']})",
+    points(joueurs["coequipier"] & joueurs["gardien"], f"{tr('Gardien', 'Goalkeeper')} ({passe['equipe']})",
            COULEURS["attaque"], "diamond", 13)
     points(~joueurs["coequipier"] & ~joueurs["gardien"], passe["adversaire"], COULEURS["defense"], "circle", 13)
-    points(~joueurs["coequipier"] & joueurs["gardien"], f"Gardien ({passe['adversaire']})",
+    points(~joueurs["coequipier"] & joueurs["gardien"], f"{tr('Gardien', 'Goalkeeper')} ({passe['adversaire']})",
            COULEURS["defense"], "diamond", 13)
-    points(joueurs["passeur"], f"Passeur : {passe['joueur']}", "#ffffff", "circle", 16)
+    points(joueurs["passeur"], f"{tr('Passeur : ', 'Passer: ')}{passe['joueur']}", "#ffffff", "circle", 16)
 
     fig.add_trace(go.Scatter(x=[passe["x_fin"]], y=[passe["y_fin"]], mode="markers",
-                             hovertemplate=f"Arrivée : {passe['receveur']}<extra></extra>", showlegend=False,
+                             hovertemplate=f"{tr('Arrivée : ', 'Receiver: ')}{passe['receveur']}<extra></extra>",
+                             showlegend=False,
                              marker=dict(size=18, color="rgba(0,0,0,0)", line=dict(color=couleur, width=2.5))))
     fig.update_layout(showlegend=True, legend=dict(orientation="h", y=-0.02, x=0, font=dict(size=12),
                                                    bgcolor="rgba(0,0,0,0)"))
